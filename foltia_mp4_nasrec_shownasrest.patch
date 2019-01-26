@@ -161,3 +161,47 @@ diff -ur css.orig/library.css css/library.css
  
  /*
  #typeTab #typeTab #typeTab
+diff -ur recorded.orig/recfiles_all.php recorded/recfiles_all.php
+--- recorded.orig/recfiles_all.php	2018-07-02 01:50:44.000000000 +0900
++++ recorded/recfiles_all.php	2019-01-26 16:00:41.257985370 +0900
+@@ -392,6 +392,7 @@
+ <div id="headerR" class="clearfix">
+ <?php
+ writediskusage();
++writenasusage();
+ ?>
+ </div>
+ <!-- /id=headerR/end -->
+diff -ur recorded.orig/recfiles_epg.php recorded/recfiles_epg.php
+--- recorded.orig/recfiles_epg.php	2018-02-09 23:52:54.000000000 +0900
++++ recorded/recfiles_epg.php	2019-01-26 16:36:07.364902123 +0900
+@@ -433,6 +433,7 @@
+ <div id="headerR" class="clearfix">
+ <?php
+ writediskusage();
++writenasusage();
+ ?>
+ </div>
+ <!-- /id=headerR/end -->
+diff -ur recorded.orig/recfiles_key.php recorded/recfiles_key.php
+--- recorded.orig/recfiles_key.php	2018-07-02 02:19:09.000000000 +0900
++++ recorded/recfiles_key.php	2019-01-26 16:36:36.604914170 +0900
+@@ -410,6 +410,7 @@
+ <div id="headerR" class="clearfix">
+ <?php
+ writediskusage();
++writenasusage();
+ ?>
+ </div>
+ <!-- /id=headerR/end -->
+diff -ur recorded.orig/recfiles_tid.php recorded/recfiles_tid.php
+--- recorded.orig/recfiles_tid.php	2018-02-09 23:55:19.000000000 +0900
++++ recorded/recfiles_tid.php	2019-01-26 16:35:36.431889703 +0900
+@@ -661,6 +661,7 @@
+ <div id="headerR" class="clearfix">
+ <?php
+ writediskusage();
++writenasusage();
+ ?>
+ </div>
+ <!-- /id=headerR/end -->
