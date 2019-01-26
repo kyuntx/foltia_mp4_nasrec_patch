@@ -1,0 +1,163 @@
+diff -ur phpcommon.orig/foltialib.php phpcommon/foltialib.php
+--- phpcommon.orig/foltialib.php	2019-01-26 16:38:33.202963477 +0900
++++ phpcommon/foltialib.php	2019-01-26 16:28:01.446733751 +0900
+@@ -503,6 +503,20 @@
+ 	
+ }//endsub
+ 
++function getnasusage(){ // ディスク使用容量取得
++//戻り値　配列　[,全体容量, 使用容量 , 空き容量, 利用割合]
++
++global $recfolderpath,$recfolderpath;
++
++//      exec ( "df -h  $recfolderpath | grep $recfolderpath", $hdfreearea);
++//      $freearea = preg_split ("/[\s,]+/", $hdfreearea[0]);
++        exec ( "df -hP  /home/foltia/php/tvnas", $hdfreearea);
++        $freearea = preg_split ("/[\s,]+/", $hdfreearea[count($hdfreearea)-1]);
++
++    return $freearea;
++
++}//endsub
++
+ function printtrcnprocesses(){ // トラコン進行状況表示
+ 
+ $ffmpegprocesses = `ps ax | grep ffmpeg | grep -v grep |  wc -l `;
+@@ -1554,7 +1568,7 @@
+ print '<!-- id=HDDremainder/start -->
+ <div id="HDDremainder">
+ <dl class="clearfix">
+-<dt>HDD使用量：</dt>';
++<dt>SSD使用量：<br>MPEG2</dt>';
+ print '<dd><span class="spent">'.$usepercent.'</span><span class="rest">'.$freepercent.'</span></dd>';
+ /*print '</dl>
+ <p>HDD容量:<em id="HDDtotal">'.$ex_all[0].'</em>GB　空き残量:<em id="HDDrest">'.$ex_free[0].'</em>GB</p>
+@@ -1562,11 +1576,33 @@
+ <!-- /id=HDDremainder/end -->';
+ */
+ print '</dl>
+-<p>HDD容量:<em id="HDDtotal">'.$all.'</em>B　空き残量:<em id="HDDrest">'.$free.'</em>B</p>
++<p>SSD容量:<em id="HDDtotal">'.$all.'</em>B　空き残量:<em id="HDDrest">'.$free.'</em>B</p>
+ </div>
+ <!-- /id=HDDremainder/end -->';
+ }
+ 
++function writenasusage(){ // ディスク使用量描画
++list (, $all, $use , $free, $usepercent) =  getnasusage();
++$freepercent = 100 - $usepercent;
++//$ex_all = explode("G",$all);
++//$ex_free = explode("G",$free);
++print '<!-- id=NASremainder/start -->
++<div id="NASremainder">
++<dl class="clearfix">
++<dt>NAS使用量：<br>MP4</dt>';
++print '<dd><span class="nasspent">'.$usepercent.'</span><span class="nasrest">'.$freepercent.'</span></dd>';
++/*print '</dl>
++<p>HDD容量:<em id="HDDtotal">'.$ex_all[0].'</em>GB　空き残量:<em id="HDDrest">'.$ex_free[0].'</em>GB</p>
++</div>
++<!-- /id=HDDremainder/end -->';
++*/
++print '</dl>
++<p>NAS容量:<em id="NAStotal">'.$all.'</em>B　空き残量:<em id="NASrest">'.$free.'</em>B</p>
++</div>
++<!-- /id=NASremainder/end -->';
++}
++
++
+ function writehtmlpageheader(){ // ページヘッダ描画
+ //print '<!-- <p id="userName">○○○○○○さん</p> -->\n';
+ print '<!-- id=gnavi/start -->
+diff -ur js.orig/jquery.library.js js/jquery.library.js
+--- js.orig/jquery.library.js	2012-06-18 18:36:14.432718071 +0900
++++ js/jquery.library.js	2019-01-26 16:24:22.414682278 +0900
+@@ -22,6 +22,31 @@
+   	$('.spent').html(spent);
+  	$('.rest').html(rest);
+  	$('.spent').css('width', spent);
++
++        var nasspent;
++        var nasrest;
++        var nastotal;
++
++        nasspent = $('.nasspent').html();
++        nasspent = parseFloat(nasspent);
++        nasrest = $('.nasrest').html();
++        nasrest = parseFloat(nasrest);
++
++        nastotal = nasspent + nasrest;
++
++        if (nastotal != 100) {
++                nasspent = Math.round(nasspent / nastotal * 100);
++                nasrest = Math.round(nasrest / nastotal * 100);
++        }
++
++        nasspent = nasspent + '%'
++        nasrest = nasrest + '%'
++
++
++        $('.nasspent').html(nasspent);
++        $('.nasrest').html(nasrest);
++        $('.nasspent').css('width', nasspent);
++
+ /* 	$('.rest').css('width', rest);
+ */
+ 
+diff -ur css.orig/library.css css/library.css
+--- css.orig/library.css	2015-03-04 03:16:27.000000000 +0900
++++ css/library.css	2019-01-26 16:19:05.748641280 +0900
+@@ -102,6 +102,56 @@
+ text-align: right;
+ }
+ 
++/*
++#NASremainder #NASremainder #NASremainder
++*/
++#NASremainder {
++background-image: url(/images/library/bg_HDDremainder.gif);
++background-position: center bottom;
++background-repeat: no-repeat;
++clear: both;
++height: 50px;
++width: 505px;
++}
++#NASremainder dl {
++padding-top: 7px;
++padding-left: 8px;
++}
++#NASremainder dt {
++height: 23px;
++line-height: 23px;
++}
++#NASremainder dd {
++height: 21px;
++line-height: 21px;
++}
++#NASremainder dt {
++float: left;
++}
++#NASremainder dd {
++border-color: #a3a2a2;
++border-style: solid;
++border-width: 1px;
++margin-left: 6.5em;
++margin-right: 10px;
++position: relative;
++}
++#NASremainder span {
++display: block;
++position: absolute; right: 0; top: 0;
++text-align: center;
++}
++#NASremainder .nasspent {
++background-image: url(/images/library/bg_HDDspent.gif);
++background-position: left top;
++background-repeat: repeat-x;
++color: #ffffff;
++left: 0;
++}
++#NASremainder p {
++padding-right: 10px;
++text-align: right;
++}
+ 
+ /*
+ #typeTab #typeTab #typeTab

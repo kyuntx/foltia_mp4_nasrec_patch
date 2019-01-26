@@ -1,0 +1,81 @@
+diff -ur perl.orig/foltia-cmeditlib.pl perl/foltia-cmeditlib.pl
+--- perl.orig/foltia-cmeditlib.pl	2014-09-09 17:01:43.000000000 +0900
++++ perl/foltia-cmeditlib.pl	2019-01-26 15:48:02.491613739 +0900
+@@ -915,6 +915,7 @@
+ push( @mp4files,$mp4hdfile);
+ my $mp4fullpath ;
+ my $targetmp4file;
++my $mp4movecmd;
+ foreach $targetmp4file (@mp4files){
+ 	$mp4fullpath = $recfolderpath."/".$tid.".localized/mp4/".$targetmp4file ;
+ 	if ((-e $mp4fullpath)&&($targetmp4file ne "")){
+@@ -924,10 +925,14 @@
+ 		#vdrファイル削除
+ 		unlink glob($recfolderpath."/".$tid.".localized/mp4/M??-*.chapters.txt");
+ 		#ipodヘッダ追加
+-		$mp4ipodheadcmd = "cd $recfolderpath ; $toolpath/perl/tool/MP4Box -tmp $recfolderpath -ipod ".$mp4fullpath ;
++#		$mp4ipodheadcmd = "cd $recfolderpath ; $toolpath/perl/tool/MP4Box -tmp $recfolderpath -ipod ".$mp4fullpath ;
++		$mp4ipodheadcmd = "cd $recfolderpath ; $toolpath/perl/tool/MP4Box -tmp $recfolderpath -ipod ".$recfolderpath."/".$targetmp4file ;
+ 		&writelog("$processfilename DEBUG mp4addchapter() $mp4ipodheadcmd");
+ 		$mp4boxsplitcmdout = `$mp4ipodheadcmd`;
+ 		&writelog("$processfilename DEBUG mp4addchapter() out:$mp4boxsplitcmdout");
++                $mp4movecmd = "mv ".$recfolderpath."/".$targetmp4file ." ".$mp4fullpath;
++                `$mp4movecmd`;
++                &writelog("$processfilename $mp4movecmd");
+ 		#update DLNA (PS3 DLNAキャッシュ対策)
+ 		$mp4filewithoutpath = basename $mp4fullpath;
+ 		$dlnaupdatecmd = "$conf{'toolpath'}/perl/makedlnastructure.pl $mp4filewithoutpath DELETE ";
+diff -ur perl.orig/mklocalizeddir.pl perl/mklocalizeddir.pl
+--- perl.orig/mklocalizeddir.pl	2012-06-28 17:18:51.830710784 +0900
++++ perl/mklocalizeddir.pl	2019-01-26 15:49:26.627618235 +0900
+@@ -26,6 +26,9 @@
+ }
+ require "foltialib.pl";
+ 
++# MP4 を保存するパス(NASとか)
++$recmp4folderpath = "/home/foltia/php/tvnas";
++
+ #引き数がアルか?
+ $tid =  $ARGV[0] ;
+ if ($tid eq "" ){
+@@ -36,7 +39,7 @@
+ 
+ 
+ #そのディレクトリがなければ
+-if (-e "$recfolderpath/$tid.localized"){
++if (-e "$recmp4folderpath/$tid.localized"){
+ 
+ }else{
+ 
+@@ -57,13 +60,14 @@
+ # Jcode::convert(\$title , 'utf8', 'utf8', "z");
+ 
+ 
+-	mkdir ("$recfolderpath/$tid.localized",0755);
+-	mkdir ("$recfolderpath/$tid.localized/.localized",0755);
+-	mkdir ("$recfolderpath/$tid.localized/mp4",0755);
+-	mkdir ("$recfolderpath/$tid.localized/m2p",0755);
+-	open (JASTRING,">$recfolderpath/$tid.localized/.localized/ja.strings")  || die "Cannot write ja.strings.\n";
++	mkdir ("$recmp4folderpath/$tid.localized",0755);
++	mkdir ("$recmp4folderpath/$tid.localized/.localized",0755);
++	mkdir ("$recmp4folderpath/$tid.localized/mp4",0755);
++	mkdir ("$recmp4folderpath/$tid.localized/m2p",0755);
++	open (JASTRING,">$recmp4folderpath/$tid.localized/.localized/ja.strings")  || die "Cannot write ja.strings.\n";
+ 	print JASTRING "\"$tid\"=\"$title\";\n";
+ 	close(JASTRING);
++	symlink ("$recmp4folderpath/$tid.localized", "$recfolderpath/$tid.localized");
+ 
+ &writelog("mklocalizeddir $tid $titleutf8");
+ 
+diff -ur perl.orig/updatem2pfiletable.pl perl/updatem2pfiletable.pl
+--- perl.orig/updatem2pfiletable.pl	2018-04-22 00:49:32.000000000 +0900
++++ perl/updatem2pfiletable.pl	2019-01-26 15:49:07.345615959 +0900
+@@ -53,7 +53,7 @@
+ # foltia_mp4files
+ #print "Start find.\n";
+ 
+-@mp4filelist = `find ${recfolderpath}/ -type f -not -name '*jpg' | grep -v mita | grep MP4`;#by foltia dev ticket #5 http://www.dcc-jpl.com/foltia/ticket/5
++@mp4filelist = `find -L ${recfolderpath}/ -type f -not -name '*jpg' | grep -v mita | grep MP4`;#by foltia dev ticket #5 http://www.dcc-jpl.com/foltia/ticket/5
+ 
+ #print "Start DB Insert.\n";
+ 
